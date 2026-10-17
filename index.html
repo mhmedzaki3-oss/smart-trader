@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2563eb">
 <title>Smart Trader Pro 2026 | محمد زكى احمد</title>
+<!-- إعدادات التثبيت الحقيقي (PWA) -->
 <link rel="manifest" href='data:application/manifest+json,{"name":"Smart Trader Pro","short_name":"ST Pro","start_url":".","display":"standalone","background_color":"#f1f5f9","theme_color":"#2563eb","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232563eb%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22 font-weight=%22bold%22%3EST%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml","purpose":"any"},{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232563eb%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22 font-weight=%22bold%22%3EST%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}'>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232563eb%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22 font-weight=%22bold%22%3EST%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -53,4 +54,57 @@ async function loadChart(){if(loadingChart)return;const ticker=el('chartStockSel
 function renderPortfolio(){
  let totalCost=0,totalMarket=0,totalPnl=0,totalQty=0;el('portfolioList').replaceChildren();
  portfolio.forEach((p,index)=>{const stock=stocks.find(s=>s.ticker===p.ticker);if(!stock)return;const live=Number(currentPrices[p.ticker]);const hasLive=Number.isFinite(live)&&live>0;const price=hasLive?live:(Number(p.current)>0?Number(p.current):p.buy);const value=p.qty*price,cost=p.qty*p.buy,pnl=value-cost,pct=cost?pnl/cost*100:0;totalCost+=cost;totalMarket+=value;totalPnl+=pnl;totalQty+=p.qty;
- const row=document.createElement('div');row.className='stock-item';row.style.alignItems='flex-start';const info=document.createElement('div');info.className='stock-info';const name=document.createElement('h4');name.textContent=stockName(stock)+' ('+stock.ticker+')';const details=document.createElement('p');details.textContent=`الكمية: ${p.qty} سهم | شراء: ${money(p.buy)} | الحالي
+ const row=document.createElement('div');row.className='stock-item';row.style.alignItems='flex-start';const info=document.createElement('div');info.className='stock-info';const name=document.createElement('h4');name.textContent=stockName(stock)+' ('+stock.ticker+')';const details=document.createElement('p');details.textContent=`الكمية: ${p.qty} سهم | شراء: ${money(p.buy)} | الحالي: ${money(price)}`;const totals=document.createElement('p');totals.style.marginTop='5px';totals.textContent=`التكلفة: ${money(cost)} | القيمة الحالية: ${money(value)}`;const source=document.createElement('p');source.textContent=hasLive?'السعر الحالي: آخر سعر تم جلبه من مصدر البيانات':(Number(p.current)>0?'السعر الحالي: مُدخل يدويًا':'السعر الحالي تقديري = سعر الشراء؛ حدّث السعر للتقييم');info.append(name,details,totals,source);
+ const right=document.createElement('div');right.style.textAlign='left';right.style.minWidth='105px';const pnlEl=document.createElement('div');pnlEl.className='stock-price';pnlEl.style.color=pnl>=0?'var(--accent)':'var(--danger)';pnlEl.textContent=(pnl>0?'+':'')+money(pnl);const pctEl=document.createElement('div');pctEl.style.fontSize='12px';pctEl.style.fontWeight='800';pctEl.style.color=pnl>=0?'var(--accent)':'var(--danger)';pctEl.textContent=(pct>0?'+':'')+pct.toFixed(2)+'%';right.append(pnlEl,pctEl);
+ const edit=document.createElement('input');edit.type='number';edit.min='0.01';edit.step='0.01';edit.placeholder='تحديث السعر';edit.value=Number(p.current)>0&&!hasLive?p.current:'';edit.className='custom-input';edit.style.width='108px';edit.style.marginTop='8px';edit.style.marginBottom='5px';edit.setAttribute('aria-label','تحديث السعر الحالي '+p.ticker);const update=document.createElement('button');update.className='small-button';update.style.padding='5px 7px';update.textContent='حفظ السعر';update.onclick=()=>{const v=Number(edit.value);if(!Number.isFinite(v)||v<=0){setStatus('portfolioStatus','أدخل سعرًا حاليًا صحيحًا أكبر من صفر.','error');return}p.current=v;if(!safeStore('st_portfolio',JSON.stringify(portfolio))){setStatus('portfolioStatus','تعذر حفظ السعر على هذا الجهاز.','error');return}renderPortfolio();setStatus('portfolioStatus','تم تحديث السعر الحالي يدويًا.','success')};right.append(edit,update);
+ const remove=document.createElement('button');remove.className='small-button';remove.style.padding='5px 7px';remove.style.marginTop='5px';remove.textContent='حذف السهم';remove.onclick=()=>{if(!confirm('هل تريد حذف '+p.ticker+' من المحفظة؟'))return;portfolio.splice(index,1);safeStore('st_portfolio',JSON.stringify(portfolio));renderPortfolio()};right.append(remove);row.append(info,right);el('portfolioList').append(row);
+ });
+ const pct=totalCost?totalPnl/totalCost*100:0;el('totalCostVal').textContent=money(totalCost);el('totalMarketVal').textContent=money(totalMarket);el('totalQtyVal').textContent=new Intl.NumberFormat(lang==='ar'?'ar-EG':'en-US').format(totalQty);el('totalPnlVal').textContent=(totalPnl>0?'+':'')+money(totalPnl);el('totalPnlPct').textContent=(pct>0?'+':'')+pct.toFixed(2)+'% من تكلفة الشراء';el('totalPnlVal').style.color=totalPnl>=0?'var(--accent)':'var(--danger)';el('totalPnlPct').style.color=pct>=0?'var(--accent)':'var(--danger)';
+ if(!portfolio.length)el('portfolioList').innerHTML='<p class="note">لا توجد أسهم في المحفظة بعد. اختر سهمًا من القائمة وأضف بيانات الشراء.</p>';
+ setStatus('portfolioStatus',Object.keys(currentPrices).length?'التقييم يستخدم آخر الأسعار التي نجح جلبها. السعر اليدوي يُستخدم فقط عندما لا يتوفر سعر سوق محدث لهذا السهم.':'لم يتم جلب أسعار السوق بعد. الأسهم التي لا تملك سعرًا يدويًا تُقيّم مؤقتًا بسعر الشراء، لذلك لا يمثل الربح/الخسارة تقديرًا سوقيًا مؤكدًا.');
+}
+function addPortfolio(){const ticker=el('pStock').value,qty=Number(el('pQty').value),buy=Number(el('pBuy').value),currentRaw=el('pCurrent').value.trim(),current=currentRaw===''?null:Number(currentRaw);if(!stocks.some(s=>s.ticker===ticker)||!Number.isInteger(qty)||qty<=0||!Number.isFinite(buy)||buy<=0||(current!==null&&(!Number.isFinite(current)||current<=0))){setStatus('portfolioStatus','راجع البيانات: الكمية عدد صحيح أكبر من صفر، وسعر الشراء والسعر الحالي الاختياري أكبر من صفر.','error');return}portfolio.push({ticker,qty,buy,current});if(!safeStore('st_portfolio',JSON.stringify(portfolio))){portfolio.pop();setStatus('portfolioStatus','تعذر حفظ المحفظة على هذا الجهاز.','error');return}el('pQty').value='100';el('pCurrent').value='';setStatus('portfolioStatus','تمت إضافة السهم وحفظ بياناته على هذا الجهاز.','success');renderPortfolio()}
+function sma(values,period){if(values.length<period)return null;return values.slice(-period).reduce((a,b)=>a+b,0)/period}
+async function analyzeSelectedStock(){
+ const ticker=el('chartStockSelect').value||'COMI',out=el('finalRecommendation'),marketOut=el('aiResult');
+ out.textContent='جاري تحليل الاتجاه وتحديد شروط الدخول والخروج...';
+ if(marketOut){marketOut.classList.remove('hidden');marketOut.textContent='جاري حساب المؤشرات من البيانات المتاحة...'}
+ try{
+  const res=await fetch(`${API}/api/public/yahoo?symbol=${encodeURIComponent(ticker)}.CA&range=6mo`,{headers:{Accept:'application/json'}});
+  if(!res.ok)throw Error('مصدر الأسعار غير متاح');
+  const bars=validBars(await res.json()),prices=bars.map(b=>Number(b.close)).filter(Number.isFinite);
+  if(prices.length<50)throw Error('بيانات تاريخية غير كافية');
+  const last=prices.at(-1),ma20=sma(prices,20),ma50=sma(prices,50),delta=(ma20-ma50)/ma50*100;
+  const recent=prices.slice(-20),low20=Math.min(...recent),high20=Math.max(...recent),held=portfolio.some(x=>x.ticker===ticker);
+  let heading,details,trigger,stop,target;
+  if(last>ma20&&ma20>ma50&&delta>1){
+   heading='🟢 شراء مشروط';trigger=`الدخول بعد تأكيد بقاء السعر أعلى من ${money(ma20)}، ويفضّل تأكيد الحركة بحجم تداول مناسب.`;
+   stop=low20;const risk=last-stop;target=risk>0?last+2*risk:null;
+   details=`الاتجاه إيجابي وفق المتوسطين: متوسط 20 جلسة أعلى من متوسط 50 جلسة، والسعر أعلى من متوسط 20 جلسة. لا تطارد السعر إذا ابتعد كثيرًا عن نقطة الدخول.`;
+  }else if(last<ma20&&ma20<ma50&&delta< -1){
+   heading=held?'🔴 بيع / تخفيف المركز':'🔴 تجنّب الشراء حاليًا';
+   trigger=held?'راجع تخفيف المركز أو الخروج وفق خطة المخاطر؛ لا تعتمد على الإشارة وحدها.':'لا توجد صفقة شراء جديدة مناسبة وفق هذه الإشارة؛ انتظر تحسن الاتجاه.';
+   stop=null;target=null;
+   details=`الاتجاه ضعيف: السعر أدنى من متوسط 20 جلسة ومتوسط 20 أدنى من متوسط 50 جلسة. ${held?'هذه إشارة مراجعة للمركز القائم وليست أمر بيع تلقائيًا.':'لا يوجد سهم مملوك في المحفظة حسب السجل الحالي.'}`;
+  }else{
+   heading='🟡 انتظار حتى تأكيد الاتجاه';
+   const conditions=[];
+   if(last<=ma20)conditions.push(`إغلاق أعلى من متوسط 20 جلسة (${money(ma20)})`);
+   if(ma20<=ma50)conditions.push(`تحسن متوسط 20 جلسة واقترابه/تجاوزه متوسط 50 جلسة (${money(ma50)})`);
+   if(!conditions.length)conditions.push('اختراق قمة حديثة مع تأكيد من حجم التداول');
+   trigger='انتظر حتى يتحقق: '+conditions.join('، ')+'، ثم أعد التحليل.';
+   stop=null;target=null;
+   details='الإشارات الحالية غير متوافقة بما يكفي لإصدار قرار شراء أو بيع واضح؛ الانتظار هنا أفضل من اختلاق توصية.';
+  }
+  let report=`التوصية النهائية: ${heading}\nالسهم: ${ticker}\nآخر إغلاق متاح: ${money(last)}\nمتوسط 20 جلسة: ${money(ma20)}\nمتوسط 50 جلسة: ${money(ma50)}\n\nالتفاصيل: ${details}\nالشرط / الإجراء: ${trigger}`;
+  if(heading.includes('شراء')) report+=`\nوقف الخسارة المرجعي: ${money(stop)} (أدنى سعر إغلاق ضمن آخر 20 جلسة، وقد لا يناسب كل استراتيجية).\nالهدف الحسابي الأولي: ${target!==null?money(target):'غير متاح'} (تقدير بنسبة عائد/مخاطرة 2:1، وليس توقعًا مضمونًا).`;
+  report+=`\n\nتنبيه: التحليل مبني على بيانات الأسعار المتاحة ومتوسطي 20/50 جلسة فقط؛ المؤشرات الفنية تتأخر وقد تعطي إشارات خاطئة. تحقّق من حداثة البيانات والسيولة والأخبار والعمولات قبل التنفيذ.`;
+  out.textContent=report;if(marketOut)marketOut.textContent=report;
+ }catch(err){const msg='لا توجد توصية نهائية حاليًا: '+(err.message==='بيانات تاريخية غير كافية'?'البيانات التاريخية المتاحة أقل من 50 جلسة.':'تعذر الاتصال بمصدر الأسعار أو لم تتوفر بيانات صالحة.');out.textContent=msg+' لن نصدر توصية شراء أو بيع تخمينية دون بيانات كافية.';if(marketOut)marketOut.textContent=msg}
+}
+function toggleLang(){lang=lang==='ar'?'en':'ar';el('htmlTag').lang=lang;el('htmlTag').dir=lang==='ar'?'rtl':'ltr';el('langBtn').textContent=lang==='ar'?'EN':'عربي';document.querySelectorAll('[data-ar][data-en]').forEach(n=>n.textContent=n.dataset[lang]);document.querySelectorAll('.nav-btn').forEach((n,i)=>{const ar=['السوق','التحليل','المحفظة'],en=['Market','Analysis','Portfolio'];n.lastChild.textContent=lang==='ar'?ar[i]:en[i]});populateSelects();renderPortfolio();if(el('marketList').children.length)fetchPrices();if(currentTab==='charts')loadChart()}
+function init(){let savedTheme='light';try{savedTheme=localStorage.getItem('st_theme')||'light'}catch(_){}applyTheme(savedTheme);const splash=el('splashScreen');setTimeout(()=>{splash.style.opacity='0';setTimeout(()=>{splash.style.display='none';let savedName='',savedRole='intermediate';try{savedName=localStorage.getItem('st_name')||'';savedRole=localStorage.getItem('st_role')||'intermediate'}catch(_){}if(savedName){userRole=['beginner','intermediate','pro'].includes(savedRole)?savedRole:'intermediate';el('userName').value=savedName;el('userLevel').value=userRole;showApp()}else{el('loginScreen').classList.remove('hidden-login')}},420)},1000)}
+el('loginBtn').addEventListener('click',login);el('userName').addEventListener('keydown',e=>{if(e.key==='Enter')login()});el('fetchBtn').addEventListener('click',fetchPrices);el('loadChartBtn').addEventListener('click',loadChart);el('chartStockSelect').addEventListener('change',()=>{if(currentTab==='charts')loadChart()});el('chartRangeSelect').addEventListener('change',()=>{if(currentTab==='charts')loadChart()});el('addPortfolioBtn').addEventListener('click',addPortfolio);el('aiAnalyzeBtn').addEventListener('click',analyzeSelectedStock);el('finalAnalyzeBtn').addEventListener('click',analyzeSelectedStock);el('themeBtn').addEventListener('click',toggleTheme);el('langBtn').addEventListener('click',toggleLang);el('backBtn').addEventListener('click',goBack);document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',goBack));el('logoutBtn').addEventListener('click',()=>el('exitScreen').classList.add('active'));el('cancelExitBtn').addEventListener('click',()=>el('exitScreen').classList.remove('active'));el('confirmExitBtn').addEventListener('click',()=>{try{localStorage.removeItem('st_name')}catch(_){}location.reload()});init();
+</script>
+</body>
+</html>
