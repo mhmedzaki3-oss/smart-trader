@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Trader Pro 2026 V3.2 Gold</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --border: #334155;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            color: var(--text);
+            font-weight: 800;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+
+        .btn-accent:hover {
+            opacity: 0.9;
+        }
+
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .stock-item {
+            background: var(--bg);
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stock-ticker {
+            font-weight: 800;
+            color: var(--primary-light);
+            font-size: 16px;
+        }
+
+        .stock-price {
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .input-group input, .input-group select {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-light);
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .result-box {
+            background: var(--bg);
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-title {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .pulse-bar {
+            background: var(--bg);
+            padding: 14px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .pulse-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #64748b;
+            transition: 0.3s ease;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--border);
+            color: var(--muted);
+        }
+
+        @media (max-width: 600px) {
+            .calc-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <img src="icon.svg" alt="ST Logo" id="appLogo">
+            <div class="brand-text">
+                <h1>Smart Trader Pro</h1>
+                <p>إصدار 2026 V3.2 Gold — البورصة المصرية EGX</p>
+            </div>
+        </div>
+        <span class="badge">PWA Ready</span>
+    </header>
+
+    <!-- Market Pulse & EGX Prices -->
+    <div class="card">
+        <div class="section-title">
+            <span>📊</span> البورصة المصرية (EGX) ونبض السوق
+        </div>
+
+        <!-- Pulse Bar -->
+        <div class="pulse-bar">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:22px;">📡</span>
+                <div>
+                    <div style="font-size:12px; color:var(--muted);">حالة السوق اللحظية</div>
+                    <div id="pulseText" style="font-weight:bold; font-size:14px;">اضغط جلب الأسعار للتحليل...</div>
+                </div>
+            </div>
+            <div id="pulseIndicator" class="pulse-indicator"></div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+            <button onclick="fetchPrices()" class="btn">🔄 جلب أحدث الأسعار</button>
+            <button id="notifyBtn" class="btn btn-accent" style="width: auto;">🔔 الإشعارات</button>
+        </div>
+
+        <!-- Stocks Grid -->
+        <div class="stock-grid" id="stockGrid">
+            <div class="stock-item">
+                <div class="stock-header">
+                    <span class="stock-ticker">COMI</span>
+                    <span class="badge">CIB</span>
+                </div>
+                <div style="font-size:12px; color:var(--muted);">البنك التجاري الدولي</div>
+                <div class="stock-price" id="price-COMI">--.-- ج.م</div>
+            </div>
+            <div class="stock-item">
+                <div class="stock-header">
+                    <span class="stock-ticker">TMGH</span>
+                    <span class="badge">TMG</span>
+                </div>
+                <div style="font-size:12px; color:var(--muted);">مجموعة طلعت مصطفى</div>
+                <div class="stock-price" id="price-TMGH">--.-- ج.م</div>
+            </div>
+            <div class="stock-item">
+                <div class="stock-header">
+                    <span class="stock-ticker">SWDY</span>
+                    <span class="badge">Elsewedy</span>
+                </div>
+                <div style="font-size:12px; color:var(--muted);">السويدي إليكتريك</div>
+                <div class="stock-price" id="price-SWDY">--.-- ج.م</div>
+            </div>
+            <div class="stock-item">
+                <div class="stock-header">
+                    <span class="stock-ticker">FWRY</span>
+                    <span class="badge">Fawry</span>
+                </div>
+                <div style="font-size:12px; color:var(--muted);">فوري تكنولوجيا البنوك</div>
+                <div class="stock-price" id="price-FWRY">--.-- ج.م</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Calculator -->
+    <div class="card">
+        <div class="section-title">
+            <span>🧮</span> حاسبة إدارة المخاطر وتحديد الحجم (Position Sizing)
+        </div>
+
+        <div class="calc-grid">
+            <div class="input-group">
+                <label>رأس المال الكلي (ج.م):</label>
+                <input type="number" id="capital" value="100000" oninput="calculateRisk()">
+            </div>
+            <div class="input-group">
+                <label>نسبة المخاطرة لكل صفقة (%):</label>
+                <input type="number" id="riskPercent" value="2" step="0.5" oninput="calculateRisk()">
+            </div>
+            <div class="input-group">
+                <label>سعر الدخول للشراء (ج.م):</label>
+                <input type="number" id="entryPrice" value="50" oninput="calculateRisk()">
+            </div>
+            <div class="input-group">
+                <label>سعر وقف الخسارة (ج.م):</label>
+                <input type="number" id="stopLoss" value="47" oninput="calculateRisk()">
+            </div>
+        </div>
+
+        <div class="result-box">
+            <span class="result-title">عدد الأسهم الموصى بشرائها:</span>
+            <span class="result-value" id="shareQty">666 سهم</span>
+        </div>
+        <div class="result-box">
+            <span class="result-title">إجمالي المبلغ المستثمر بالصفقة:</span>
+            <span class="result-value" id="totalInvestment" style="color:var(--text);">33,300 ج.م</span>
+        </div>
+        <div class="result-box">
+            <span class="result-title">أقصى خسارة محتملة (المخاطرة):</span>
+            <span class="result-value" id="maxRiskAmount" style="color:var(--danger);">2,000 ج.م</span>
+        </div>
+    </div>
+
+    <!-- Local AI Analysis Engine -->
+    <div class="card">
+        <div class="section-title">
+            <span>🤖</span> المساعد الذكي المحلي (Local AI Companion)
+        </div>
+
+        <div class="input-group">
+            <label>اختر السهم للتحليل:</label>
+            <select id="aiStockSelect">
+                <option value="COMI">COMI - البنك التجاري الدولي</option>
+                <option value="TMGH">TMGH - مجموعة طلعت مصطفى</option>
+                <option value="SWDY">SWDY - السويدي إليكتريك</option>
+                <option value="FWRY">FWRY - فوري</option>
+            </select>
+        </div>
+
+        <button onclick="runAIAnalysis()" class="btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+            ⚡ تحليل السهم بواسطة الذكاء الاصطناعي
+        </button>
+
+        <div id="aiResult" style="margin-top:14px; padding:14px; background:var(--bg); border-radius:10px; border:1px solid var(--border); display:none; font-size:14px; line-height:1.6;">
+        </div>
+    </div>
+</div>
+
+<script>
+    // Stocks Data Configuration
+    const stocks = [
+        { ticker: 'COMI', name: 'البنك التجاري الدولي', price: 82.50, change: 1.2 },
+        { ticker: 'TMGH', name: 'مجموعة طلعت مصطفى', price: 58.00, change: -0.8 },
+        { ticker: 'SWDY', name: 'السويدي إليكتريك', price: 45.20, change: 2.1 },
+        { ticker: 'FWRY', name: 'فوري تكنولوجيا البنوك', price: 7.40, change: 0.0 }
+    ];
+
+    // Fetch Simulated Live Prices
+    async function fetchPrices() {
+        stocks.forEach(stock => {
+            const randomChange = (Math.random() * 2 - 1).toFixed(2);
+            stock.price = Math.max(1, (stock.price + parseFloat(randomChange))).toFixed(2);
+            const el = document.getElementById(`price-${stock.ticker}`);
+            if (el) {
+                el.textContent = `${stock.price} ج.م`;
+            }
+        });
+        updateMarketPulse();
+    }
+
+    // Market Pulse Update Logic
+    function updateMarketPulse() {
+        let positive = 0;
+        let negative = 0;
+
+        stocks.forEach(s => {
+            if (Math.random() > 0.4) positive++;
+            else negative++;
+        });
+
+        const pulseText = document.getElementById('pulseText');
+        const pulseIndicator = document.getElementById('pulseIndicator');
+        const total = positive + negative;
+
+        if (total > 0) {
+            const ratio = (positive / total) * 100;
+            if (ratio >= 60) {
+                pulseText.textContent = `🟢 إيجابي (${positive} صاعد / ${negative} هابط)`;
+                pulseText.style.color = 'var(--accent)';
+                pulseIndicator.style.background = 'var(--accent)';
+                pulseIndicator.style.boxShadow = '0 0 10px var(--accent)';
+            } else if (ratio <= 40) {
+                pulseText.textContent = `🔴 سلبي (${positive} صاعد / ${negative} هابط)`;
+                pulseText.style.color = 'var(--danger)';
+                pulseIndicator.style.background = 'var(--danger)';
+                pulseIndicator.style.boxShadow = '0 0 10px var(--danger)';
+            } else {
+                pulseText.textContent = `🟡 متذبذب (${positive} صاعد / ${negative} هابط)`;
+                pulseText.style.color = '#f59e0b';
+                pulseIndicator.style.background = '#f59e0b';
+                pulseIndicator.style.boxShadow = '0 0 10px #f59e0b';
+            }
+        }
+    }
+
+    // Risk Calculator Logic
+    function calculateRisk() {
+        const capital = parseFloat(document.getElementById('capital').value) || 0;
+        const riskPercent = parseFloat(document.getElementById('riskPercent').value) || 0;
+        const entryPrice = parseFloat(document.getElementById('entryPrice').value) || 0;
+        const stopLoss = parseFloat(document.getElementById('stopLoss').value) || 0;
+
+        if (entryPrice <= stopLoss || entryPrice <= 0 || stopLoss <= 0) {
+            document.getElementById('shareQty').textContent = 'تحقق من أسعار الدخول والوقف';
+            document.getElementById('totalInvestment').textContent = '0 ج.م';
+            document.getElementById('maxRiskAmount').textContent = '0 ج.م';
+            return;
+        }
+
+        const maxRiskAmount = capital * (riskPercent / 100);
+        const riskPerShare = entryPrice - stopLoss;
+        const shareQty = Math.floor(maxRiskAmount / riskPerShare);
+        const totalInvestment = shareQty * entryPrice;
+
+        document.getElementById('shareQty').textContent = `${shareQty.toLocaleString()} سهم`;
+        document.getElementById('totalInvestment').textContent = `${totalInvestment.toLocaleString()} ج.م`;
+        document.getElementById('maxRiskAmount').textContent = `${maxRiskAmount.toLocaleString()} ج.م`;
+    }
+
+    // AI Analysis Simulation
+    function runAIAnalysis() {
+        const selectedTicker = document.getElementById('aiStockSelect').value;
+        const stock = stocks.find(s => s.ticker === selectedTicker);
+        const aiResult = document.getElementById('aiResult');
+
+        aiResult.style.display = 'block';
+        aiResult.innerHTML = `<strong>⏳ جاري استدعاء نموذج الذكاء الاصطناعي المحلي لقراءة مؤشرات ${selectedTicker}...</strong>`;
+
+        setTimeout(() => {
+            aiResult.innerHTML = `
+                <div style="color:var(--primary-light); font-weight:bold; margin-bottom:6px;">💡 تقرير تحليل AI لسهم ${stock.name} (${stock.ticker}):</div>
+                <ul>
+                    <li>• <strong>السعر الحالي:</strong> ${stock.price} ج.م</li>
+                    <li>• <strong>المستويات الفنية:</strong> النطاق الاستراتيجي يتداول فوق منطقة الدعم الأولى.</li>
+                    <li>• <strong>توصية المخاطرة:</strong> يوصى بوضع وقف الخسارة على مسافة لا تتعدى 3.5% مع التزام كامل بحجم الصفقة.</li>
+                    <li>• <strong>التقييم العام:</strong> الاتجاه عام متزامن مع حركة مؤشر EGX30.</li>
+                </ul>
+            `;
+        }, 1000);
+    }
+
+    // Notifications Integration
+    document.getElementById('notifyBtn').addEventListener('click', async () => {
+        if (!("Notification" in window)) {
+            alert("متصفحك لا يدعم الإشعارات.");
+            return;
+        }
+        let perm = Notification.permission;
+        if (perm === "default") {
+            perm = await Notification.requestPermission();
+        }
+        if (perm === "granted") {
+            alert("تم تفعيل الإشعارات بنجاح!");
+            new Notification("Smart Trader Pro 2026", {
+                body: "تنبيهات الأسعار وإشعارات السوق مفعلة الآن.",
+                icon: "icon.svg"
+            });
+        } else {
+            alert("لم يتم منح الإذن للإشعارات.");
+        }
+    });
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(() => {
+                // Standalone PWA fallback mode
+            });
+        });
+    }
+
+    // Initial Execution
+    calculateRisk();
+    fetchPrices();
+</script>
+</body>
+</html>
