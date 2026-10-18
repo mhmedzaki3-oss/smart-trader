@@ -188,5 +188,104 @@ function importPortfolioFile(file){if(!file)return;if(file.size>2*1024*1024){set
 function toggleLang(){lang=lang==='ar'?'en':'ar';el('htmlTag').lang=lang;el('htmlTag').dir=lang==='ar'?'rtl':'ltr';el('langBtn').textContent=lang==='ar'?'EN':'عربي';document.querySelectorAll('[data-ar][data-en]').forEach(n=>n.textContent=n.dataset[lang]);document.querySelectorAll('.nav-btn').forEach((n,i)=>{const ar=['السوق','التحليل','المحفظة'],en=['Market','Analysis','Portfolio'];n.lastChild.textContent=lang==='ar'?ar[i]:en[i]});populateSelects();if(el('displayRole'))el('displayRole').textContent=lang==='ar'?'مستوى الخبرة: '+roleLabel(userRole):'Experience: '+roleLabelEn(userRole);renderPortfolio();if(el('marketList').children.length)fetchPrices();if(currentTab==='charts')loadChart()}
 function init(){let savedTheme='light',savedName='',savedRole='intermediate';try{savedTheme=localStorage.getItem('st_theme')||'light';savedName=localStorage.getItem('st_name')||'';savedRole=localStorage.getItem('st_role')||'intermediate'}catch(_){}applyTheme(savedTheme);if(savedName)el('userName').value=savedName;userRole=['beginner','intermediate','pro'].includes(savedRole)?savedRole:'intermediate';el('userLevel').value=userRole;setLoginMode();const splash=el('splashScreen');setTimeout(()=>{splash.style.opacity='0';setTimeout(()=>{splash.style.display='none';el('loginScreen').style.display='flex';el('loginScreen').classList.remove('hidden-login');el('userPassword').focus()},420)},700)}
 el('loginBtn').addEventListener('click',login);el('userName').addEventListener('keydown',e=>{if(e.key==='Enter')el('userPassword').focus()});el('userPassword').addEventListener('keydown',e=>{if(e.key==='Enter'){if(!el('confirmPasswordField').classList.contains('hidden'))el('confirmPassword').focus();else login()}});el('confirmPassword').addEventListener('keydown',e=>{if(e.key==='Enter')login()});el('resetLoginBtn').addEventListener('click',resetLocalLogin);el('selfCheckBtn').addEventListener('click',runSelfCheck);el('exportPortfolioBtn').addEventListener('click',exportPortfolio);el('importPortfolioBtn').addEventListener('click',()=>el('importPortfolioFile').click());el('importPortfolioFile').addEventListener('change',e=>importPortfolioFile(e.target.files&&e.target.files[0]));el('fetchBtn').addEventListener('click',fetchPrices);el('loadChartBtn').addEventListener('click',loadChart);el('chartStockSelect').addEventListener('change',()=>{if(currentTab==='charts')loadChart()});el('chartRangeSelect').addEventListener('change',()=>{if(currentTab==='charts')loadChart()});el('addPortfolioBtn').addEventListener('click',addPortfolio);el('aiAnalyzeBtn').addEventListener('click',analyzeSelectedStock);el('finalAnalyzeBtn').addEventListener('click',analyzeSelectedStock);el('themeBtn').addEventListener('click',toggleTheme);el('langBtn').addEventListener('click',toggleLang);el('backBtn').addEventListener('click',goBack);document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',goBack));el('logoutBtn').addEventListener('click',()=>el('exitScreen').classList.add('active'));el('cancelExitBtn').addEventListener('click',()=>el('exitScreen').classList.remove('active'));el('confirmExitBtn').addEventListener('click',()=>location.reload());if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('./service-worker.js').catch(()=>{});}init();
+ // --- ميزة نبض السوق (Market Pulse) ---
+function updateMarketPulse(results) {
+    let positiveCount = 0;
+    let negativeCount = 0;
+
+    results.forEach(r => {
+        const bars = validBars(r.data);
+        if (bars.length >= 2) {
+            const currentPrice = bars[bars.length - 1].close;
+            const prevPrice = bars[bars.length - 2].close;
+            if (currentPrice > prevPrice) positiveCount++;
+            else if (currentPrice < prevPrice) negativeCount++;
+        }
+    });
+
+    const total = positiveCount + negativeCount;
+    const pulseText = document.getElementById('pulseText');
+    const pulseIndicator = document.getElementById('pulseIndicator');
+
+    if (total > 0) {
+        const positiveRatio = (positiveCount / total) * 100;
+        if (positiveRatio >= 60) {
+            pulseText.textContent = `🟢 إيجابي (${positiveCount} صاعد / ${negativeCount} هابط)`;
+            pulseText.style.color = 'var(--accent)';
+            pulseIndicator.style.background = 'var(--accent)';
+            pulseIndicator.style.boxShadow = '0 0 10px var(--accent)';
+        } else if (positiveRatio <= 40) {
+            pulseText.textContent = `🔴 سلبي (${positiveCount} صاعد / ${negativeCount} هابط)`;
+            pulseText.style.color = 'var(--danger)';
+            pulseIndicator.style.background = 'var(--danger)';
+            pulseIndicator.style.boxShadow = '0 0 10px var(--danger)';
+        } else {
+            pulseText.textContent = `🟡 متذبذب (${positiveCount} صاعد / ${negativeCount} هابط)`;
+            pulseText.style.color = '#f59e0b';
+            pulseIndicator.style.background = '#f59e0b';
+            pulseIndicator.style.boxShadow = '0 0 10px #f59e0b';
+        }
+    }
+}
+
+// --- ميزة الإشعارات ---
+document.getElementById('notifyBtn').addEventListener('click', async () => {
+    if (!("Notification" in window)) {
+        alert("متصفحك لا يدعم الإشعارات.");
+        return;
+    }
+
+    let permission = Notification.permission;
+    if (permission === "default") {
+        permission = await Notification.requestPermission();
+    }
+
+    if (permission === "granted") {
+        alert("تم تفعيل الإشعارات بنجاح!");
+        document.getElementById('notifyBtn').style.background = 'var(--accent)';
+        document.getElementById('notifyBtn').style.color = 'white';
+        document.getElementById('notifyBtn').textContent = '✅ الإشعارات مفعلة';
+        
+        new Notification("Smart Trader Pro", {
+            body: "أهلاً بك! الإشعارات تعمل الآن. سنخبرك عند تغير الأسعار.",
+            icon: "https://mhmedzaki3-oss.github.io/smart-trader/icon.svg"
+        });
+    } else {
+        alert("لم يتم تفعيل الإشعارات. يمكنك تفعيلها من إعدادات المتصفح.");
+    }
+});
+
+// --- ربط الإشعارات بتحديث الأسعار ---
+// نقوم بتعديل دالة fetchPrices الأصلية لتشغيل نبض السوق والإشعارات
+const originalFetchPrices = fetchPrices;
+fetchPrices = async function() {
+    await originalFetchPrices(); 
+    
+    // تحديث نبض السوق بعد جلب البيانات
+    try {
+        const results = await Promise.all(stocks.map(fetchOne));
+        updateMarketPulse(results);
+
+        // إرسال إشعار عند تغير سعر السهم الأول (كعينة)
+        if (Notification.permission === "granted") {
+            const ticker = 'COMI';
+            const targetResult = results.find(r => r.stock.ticker === ticker);
+            if (targetResult) {
+                const bars = validBars(targetResult.data);
+                if (bars.length >= 2) {
+                    const currentPrice = bars[bars.length - 1].close;
+                    const prevPrice = bars[bars.length - 2].close;
+                    const change = currentPrice - prevPrice;
+                    if (Math.abs(change) > 0.5) { // إشعار فقط إذا تغير السعر بأكثر من 0.5 جنيه
+                        new Notification("📊 تنبيه من السوق", {
+                            body: `سهم البنك التجاري (COMI) تغير سعره إلى ${currentPrice.toFixed(2)} ج.م`,
+                            icon: "https://mhmedzaki3-oss.github.io/smart-trader/icon.svg"
+                        });
+                    }
+                }
+            }
+        }
+    } catch(e) { console.warn('Pulse update error:', e); }
+};
 </script>
 </body></html>
