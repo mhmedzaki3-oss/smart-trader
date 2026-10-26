@@ -180,8 +180,8 @@ function validBars(data) {
       };
     })
     .sort((a, b) => new Date(a.date) - new Date(b.date));
-}}
-function updateMarketPulse(results) {
+}
+  function updateMarketPulse(results) {
     let pos = 0, neg = 0;
     results.forEach(r => {
         const bars = validBars(r.data);
