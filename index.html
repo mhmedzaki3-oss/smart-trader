@@ -212,6 +212,44 @@ document.getElementById('notifyBtn').addEventListener('click', async () => {
         new Notification("Smart Trader Pro", { body: "الإشعارات تعمل الآن.", icon: "https://mhmedzaki3-oss.github.io/smart-trader/icon.svg" });
     } else { alert("لم يتم تفعيل الإشعارات."); }
 });
+
+async function fetchOne(stock) {
+  const symbol = String(stock?.ticker || "").trim().toUpperCase();
+
+  if (!symbol) {
+    return { stock, data: { prices: [] }, error: "Missing ticker" };
+  }
+
+  try {
+    const url =
+      `${API}/api/prices?symbol=${encodeURIComponent(symbol + ".CA")}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data || data.ok === false) {
+      throw new Error(data?.error || "Invalid price response");
+    }
+
+    return { stock, data };
+  } catch (error) {
+    return {
+      stock,
+      data: { prices: [] },
+      error: error?.message || "Price request failed"
+    };
+  }
+}
+  
 const originalFetchPrices = fetchPrices;
 fetchPrices = async function() {
     await originalFetchPrices();
